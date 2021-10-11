@@ -120,9 +120,9 @@ function draw() {
     Players.Draw();
 
     if(Players.CurrentPlayer().CheckingWon() && GamePlaying) {
-        textSize(150);
+        textSize(100);
         fill("HotPink");
-        text("You Won", width / 2, height / 2);
+        text("Player " + (Players.CurrentPlayer().PlayerNum + 1) + " Won", width / 2, height / 2);
     }
 
 }
