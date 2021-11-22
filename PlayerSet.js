@@ -1,7 +1,7 @@
 class PlayerSet {
 
 
-    constructor(PlayDeck, ...Players) {
+    constructor(PlayDeck, Players) {
 
         this.Players = Players;
         this.CurrentTurn = 0;
@@ -11,13 +11,15 @@ class PlayerSet {
         this.Reverse = false;
         this.CardsToDraw = 0;
 
-        this.TurnStarted = false;
+        this.GamePlaying = false;
         
-        this.RepositionHand();
+        this.RepositionHands();
+
+        Canvas.mouseReleased(() => { for(const Player of this.Players) { if(Player.WaitForPhase1) Player.ContinueOnToPhase1() } });
 
     }
 
-    RepositionHand() {
+    RepositionHands() {
 
         this.StartingAngle = 90;
         this.AnglePerPlayer = 360 / this.Players.length;
@@ -42,9 +44,29 @@ class PlayerSet {
 
     }
 
-    DealCards() { for(var i = 0; i < this.InitialCards; i++) { for(var j = 0; j < this.Players.length; j++) { var fun = (I, J) => { setTimeout( () => { this.Players[J].DrawCard(false) }, DealInterval * (I * this.Players.length + J)) }; fun(i, j) } } };
+    PassHands() {
 
-    AddCardsToAll(Card) { for(var i = 0; i < this.Players.length; i++) { this.Players[i].AddCard(Card) } };
+        var Hands = [];
+
+        for(var i = 0; i < this.Players.length; i++) Hands.push(this.Players[i].Hand)
+
+        if(this.Direction > 0) for(var i = 0; i < this.Players.length; i++) this.PassOneHand(Hands, i);
+
+        if(this.Direction < 0) for(var i = this.Players.length - 1; i >= 0; i--) this.PassOneHand(Hands, i);
+
+        this.RepositionHands();
+    }
+
+    PassOneHand(Hands, i) {
+
+        var NextI = i + this.Direction;
+
+        NextI = this.RepeatNumber(NextI);
+
+        this.Players[NextI].Hand = Hands[i];
+    }
+
+    DealCards() { for(var i = 0; i < this.InitialCards; i++) { for(var j = 0; j < this.Players.length; j++) { var fun = (I, J) => { setTimeout( () => { this.Players[J].DrawCard(false) }, DealInterval * (I * this.Players.length + J)) }; fun(i, j) } } };
 
     Draw() {
 
@@ -67,7 +89,7 @@ class PlayerSet {
             push();
             stroke(0);
             translate(width / 2, height / 2);
-            rotate(this.Theta + this.StartingAngle);
+            rotate(this.Theta + this.StartingAngle + 1);
             line(this.Radius - this.LengthOfArrow, -this.LengthOfArrow * this.Direction, this.Radius, 0);
             line(this.Radius, 0, this.Radius + this.LengthOfArrow, -this.LengthOfArrow * this.Direction);
             pop();
@@ -89,24 +111,50 @@ class PlayerSet {
 
     NextTurn() {
 
-        this.TurnStarted = true;
+        if(this.CurrentPlayer() == undefined || !this.CurrentPlayer().CheckingWon()) {
 
-        this.CurrentTurn += this.Direction;
+            this.GamePlaying = true;
 
-        if(this.CurrentTurn >= this.Players.length) this.CurrentTurn = 0;
+            this.CurrentTurn += this.Direction;
 
-        else if(this.CurrentTurn == -1) this.CurrentTurn = this.Players.length - 1;
+            if(this.CurrentTurn >= this.Players.length) this.CurrentTurn = 0;
 
-        this.RepositionHand();
+            else if(this.CurrentTurn == -1) this.CurrentTurn = this.Players.length - 1;
 
-        setTimeout(() => { this.Players[this.CurrentTurn].StartTurnPhase1(this.CardsToDraw) }, HandSpeed + 50);
+            this.RepositionHands();
+
+            setTimeout(() => { this.Players[this.CurrentTurn].StartTurnPhase1(this.CardsToDraw) }, HandSpeed + 50);
+
+        }
         
     }
 
-    TurnEnded() { this.TurnStarted = false };
+    TurnEnded() {
+
+        var IsEqual = this.PlayDeck.Top().Number == this.PlayDeck.SecondToTop().Number && this.PlayDeck.Top().Color == this.PlayDeck.SecondToTop().Color
+        var IsNumber = this.PlayDeck.Top().Number.localeCompare("9") <= 0 && this.PlayDeck.Top().Number.localeCompare("0") == 1;
+
+        if(Dirty_Uno && IsEqual && IsNumber) {
+            
+            for(var i = 0; i < Number(this.PlayDeck.Top().Number); i++) { setTimeout(() => { this.PreviousPlayer().DrawCard(false) }, i * DrawInterval) };
+
+            setTimeout(() => { this.NextTurn() }, Number(this.PlayDeck.Top().Number) * DrawInterval + DrawSpeed);
+        }
+
+        
+
+        else if(Dirty_Uno && this.PlayDeck.Top().Color != "Wild" && this.PlayDeck.Top().Number == "0") {
+            this.PassHands();
+            setTimeout(() => { this.NextTurn() }, HandSpeed + 500);
+        }
+
+        else this.NextTurn();
+    }
 
     CardPlayed() {
 
+        this.JustPlayed = true;
+        
         if(this.PlayDeck.Top().Number == "Reverse") this.Direction *= -1;
 
         else if(this.PlayDeck.Top().Number == "Draw 2") this.CardsToDraw += 2;
@@ -117,20 +165,39 @@ class PlayerSet {
 
     CardDrawn() {
 
+        this.JustPlayed = false;
+
         this.CardsToDraw = 0;
     }
 
     CurrentPlayer() { return this.Players[this.CurrentTurn] };
 
+    RepeatNumber(NextTurn) {
+
+        if(NextTurn == this.Players.length) return 0;
+
+        else if(NextTurn == -1) return this.Players.length - 1;
+
+        else return NextTurn;
+    }
+
     NextPlayer() {
 
         var NextTurn = this.CurrentTurn + this.Direction;
 
-        if(NextTurn == this.Players.length) NextTurn = 0;
-
-        else if(NextTurn == -1) NextTurn = this.Players.length - 1;
+        NextTurn = this.RepeatNumber(NextTurn);
 
         return this.Players[NextTurn];
+    
+    }
+
+    PreviousPlayer() {
+
+        var PreviousTurn = this.CurrentTurn - this.Direction;
+
+        PreviousTurn = this.RepeatNumber(PreviousTurn);
+
+        return this.Players[PreviousTurn];
     
     }
 

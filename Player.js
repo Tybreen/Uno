@@ -13,6 +13,9 @@ class Player {
         this.IsSkipped = false;
 
         this.CurrentPhase = 0;
+
+        this.NumOfDrawed = 0;
+        this.NumOfPlayed = 0;
     }
 
 
@@ -23,15 +26,27 @@ class Player {
 
     Move(X, Y, Angle) { this.Hand.Move(X, Y, Angle) };
 
-    AddCard(Card) { this.Hand.AddCard(Card, true) };
-
     DrawCard(WillSort) {
 
         var DrawnCard = this.DrawDeck.Pop();
-        
+
+        if(DrawDeck.Cards.length == 0) {
+
+            DrawDeck.Cards = PlayDeck.Cards.splice(0, PlayDeck.Cards.length - 1);
+            DrawDeck.Hide();
+            DrawDeck.Shuffle();
+            DrawDeck.Move();
+
+            console.log("Num of cards now" + DrawDeck.Cards.length)
+
+            for(const Card of DrawDeck.Cards) { Card.SelectedColor = "" };
+        }
+
         this.Hand.AddCard(DrawnCard, WillSort);
 
         this.Owner.CardDrawn();
+
+        this.NumOfDrawed++;
 
         return DrawnCard;
     }
@@ -42,8 +57,8 @@ class Player {
         Card.SmoothMove(this.PlayDeck.X, this.PlayDeck.Y, 0, 1, PlaySpeed);
         this.Hand.UnSetUpPlayableCards();
         this.Hand.RemoveCard(Card);
-        //this.Hand.Hide();
         this.Owner.CardPlayed();
+        this.NumOfPlayed++;
         this.StartTurnPhase3();
     }
 
@@ -64,11 +79,15 @@ class Player {
 
     DrawCardAndPlay() {
 
-        var DrawnCard = this.DrawCard(false);
+        var DrawnCard = this.DrawCard(Dirty_Uno && this instanceof HumanPlayer);
 
-        if(DrawnCard.Playable(PlayDeck.Top())) setTimeout( () => this.StartTurnPhase2(), DrawSpeed);
+        if(DrawnCard.Playable(PlayDeck.Top(), this.Owner.JustPlayed)) setTimeout( () => this.StartTurnPhase2(), DrawInterval);
 
-        else this.EndTurn();
+        else if(!Dirty_Uno) this.EndTurn();
+
+        else setTimeout( () => this.DrawCardAndPlay(), DrawInterval);
+
+        if(Dirty_Uno && this instanceof HumanPlayer) setTimeout( () => DrawnCard.Show(), DrawSpeed);
     }
 
 
@@ -80,9 +99,17 @@ class Player {
 
             this.MyTurn = true;
 
-            for(var i = 0; i < CardsToDraw; i++) { setTimeout(() => this.DrawCard(false), DrawSpeed * i) };
+            var WillDrawCards = (!Dirty_Uno || !this.Hand.HasPlayableCards(PlayDeck.Top(), this.Owner.JustPlayed)) && CardsToDraw > 0;
 
-            setTimeout(() => { if(CardsToDraw == 0) this.StartTurnPhase2(); else this.EndTurn() }, DrawSpeed * CardsToDraw);
+            if(WillDrawCards) for(var i = 0; i < CardsToDraw; i++) { setTimeout(() => this.DrawCard(false), DrawInterval * i) };
+
+            var WaitTime;
+
+            if(!WillDrawCards) WaitTime = 50;
+
+            else WaitTime = DrawSpeed * CardsToDraw + 50;
+
+            setTimeout(() => { if(!WillDrawCards) this.StartTurnPhase2(); else this.EndTurn() }, WaitTime);
 
         }
 
@@ -91,7 +118,10 @@ class Player {
         this.IsSkipped = false;
     }
 
-    StartTurnPhase2() { this.CurrentPhase = 2 };
+    StartTurnPhase2() {
+        this.CurrentPhase = 2;
+        this.Hand.Sort(0);
+    }
 
     StartTurnPhase3() { this.CurrentPhase = 3 };
 
@@ -99,7 +129,7 @@ class Player {
         this.Hand.UnSetUpPlayableCards();
         this.Hand.Hide();
         this.MyTurn = false;
-        setTimeout(() => { this.Owner.TurnEnded() }, DrawSpeed + 50);
+        setTimeout(() => { this.Owner.TurnEnded() }, PlaySpeed + 50);
     }
 
     CheckingWon() { return this.Hand.Cards.length == 0 };

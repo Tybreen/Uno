@@ -4,19 +4,26 @@ class HumanPlayer extends Player {
 
         super(X, Y, DrawDeck, PlayDeck);
 
+        this.WaitForPhase1 = false;
+
         this.PlayerUI = false;
         this.WildUI = false;
 
-        this.WildButtons = new ButtonGroup([[color(0, 50, 255), "Blue"], ["Green", "Green"], ["Red", "Red"], ["Yellow", "Yellow"]]);
+        this.WildButtons = new ButtonGroup([[color("#4287f5"), "Blue"], ["#66CC00", "Green"], ["#CC0000", "Red"], ["#FFCC33", "Yellow"]]);
 
         this.WildButtons.SetClickCallBacks( (i) => { this.ChooseColor(i) } );
     
     }
 
     StartTurnPhase1(CardToDraw) {
+        this.CardToDraw = CardToDraw;
 
-        super.StartTurnPhase1(CardToDraw);
+        var NumOfHuman = 0;
+        for(const Player of this.Owner.Players) { if(Player instanceof HumanPlayer) NumOfHuman++ };
 
+        if(NumOfHuman != 1) this.WaitForPhase1 = true;
+        else this.ContinueOnToPhase1();
+        
     }
 
     StartTurnPhase2() {
@@ -25,16 +32,14 @@ class HumanPlayer extends Player {
 
         // Show Cards.
 
-        this.Hand.Sort();
-
         this.Hand.Show();
 
         // Shift Cards Up.
 
-        this.Hand.MoveUpPlayableCards(this.PlayDeck.Top());
+        this.Hand.MoveUpPlayableCards(this.PlayDeck.Top(), this.Owner.JustPlayed);
 
         // Set the CallBack.
-        var HasPlayableCards = this.Hand.SetUpPlayableCards(this.PlayDeck.Top(), (Card) => this.PlayCard(Card), () => { this.Hand.UnSetUpPlayableCards() } );
+        var HasPlayableCards = this.Hand.SetUpPlayableCards(this.PlayDeck.Top(), (Card) => this.PlayCard(Card), () => { this.Hand.UnSetUpPlayableCards() }, this.Owner.JustPlayed);
 
         // If no Card can be Played let them Draw a Card.
         
@@ -93,12 +98,23 @@ class HumanPlayer extends Player {
 
         super.Draw();
 
-        if(this.MyTurn && this.CurrentPhase == 2) this.Hand.SetUpPlayableCards(this.PlayDeck.Top(), (Card) => this.PlayCard(Card), () => this.Hand.UnSetUpPlayableCards() );
+        if(this.MyTurn && this.CurrentPhase == 2) this.Hand.SetUpPlayableCards(this.PlayDeck.Top(), (Card) => this.PlayCard(Card), () => this.Hand.UnSetUpPlayableCards(), this.Owner.JustPlayed);
     }
 
     DrawUI() {
 
         super.DrawUI();
+
+        if(this.WaitForPhase1) {
+
+            fill(0, 150);
+            rect(width / 2, height / 2, width, height);
+
+            fill(255);
+            textSize(30);
+
+            text("Player " + (this.PlayerNum + 1) + "\nClick Screen to Continue", width / 2, height / 3);
+        }
 
         if(this.PlayerUI) { this.PlayerSelect.Draw() };
         if(this.WildUI) { this.WildButtons.Draw() };
@@ -119,13 +135,18 @@ class HumanPlayer extends Player {
     }
 
     ChooseColor(ButtonClicked) {
-        if(ButtonClicked == 0) this.PlayDeck.Top().SelectedColor = "blue";
-        else if(ButtonClicked == 1) this.PlayDeck.Top().SelectedColor = "green";
-        else if(ButtonClicked == 2) this.PlayDeck.Top().SelectedColor = "red";
-        else this.PlayDeck.Top().SelectedColor = "yellow";
+        if(ButtonClicked == 0) this.PlayDeck.Top().SelectedColor = "#4287f5";
+        else if(ButtonClicked == 1) this.PlayDeck.Top().SelectedColor = "#66CC00";
+        else if(ButtonClicked == 2) this.PlayDeck.Top().SelectedColor = "#CC0000";
+        else this.PlayDeck.Top().SelectedColor = "#FFCC33";
 
         this.WildUI = false;
         this.EndTurn();
+    }
+
+    ContinueOnToPhase1() {
+        super.StartTurnPhase1(this.CardToDraw);
+        this.WaitForPhase1 = false;
     }
 
 }

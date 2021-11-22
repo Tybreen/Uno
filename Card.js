@@ -39,8 +39,6 @@ class Card {
 
         fill(this.SelectedColor);
 
-        if(this.SelectedColor == "blue") fill(color(0, 50, 255));
-
         noStroke();
 
         if(this.Color == "Wild" && this.SelectedColor != "") rect(this.Sprite.position.x, this.Sprite.position.y, this.Sprite.width + 10, this.Sprite.height + 10);
@@ -50,10 +48,14 @@ class Card {
 
     Update() { this.Sprite.update() };
 
-    Move(X, Y, Angle) {
+    Move(X, Y, Angle, Size) {
+        this.TotalTime = 0;
+        this.CurrentTime = 0;
+
         this.Sprite.position.x = X;
         this.Sprite.position.y = Y;
         this.Sprite.rotation = Angle;
+        this.Sprite.scale = Size;
     }
 
     Resize(Scale) { this.Sprite.scale = Scale };
@@ -77,6 +79,8 @@ class Card {
 
     Hide() { this.Sprite.changeImage("Back") };
 
+    IsExactMatch(TopCard, JustPlayed) { return Dirty_Uno && JustPlayed && TopCard.Number == this.Number && TopCard.Color == this.Color && !(TopCard.Number.localeCompare("9") == 1 || TopCard.Color == "Wild" || TopCard.Number == "0") }
+
     static Compare(Card1, Card2) {
 
         if(Card1.Color < Card2.Color) return -1;
@@ -86,9 +90,11 @@ class Card {
         else return Card1.Number.localeCompare(Card2.Number);
     }
 
-    Playable(TopCard) {
+    Playable(TopCard, JustPlayed) {
 
-        if(this.Color == "Wild") return true;
+        if(Dirty_Uno && JustPlayed && (TopCard.Number == "Draw 2" || TopCard.Number == "Draw 4")) return TopCard.Number == this.Number;
+
+        else if(this.Color == "Wild") return true;
 
         else if(TopCard.Color == "Wild") return TopCard.SelectedColor == this.Color;
 

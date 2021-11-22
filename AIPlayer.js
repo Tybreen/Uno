@@ -5,12 +5,13 @@ class AIPlayer extends Player {
         super(X, Y, DrawDeck, PlayDeck);
 
         this.DeBug = false;
+
+        this.Delay = 1000;
     
     }
 
     Draw() {
         super.Draw();
-
         push()
         fill(0);
         textSize(30);
@@ -32,58 +33,58 @@ class AIPlayer extends Player {
 
         if(this.DeBug) {
             this.Hand.Show();
-            this.Hand.MoveUpPlayableCards(this.PlayDeck.Top());
+            this.Hand.MoveUpPlayableCards(this.PlayDeck.Top(), this.Owner.JustPlayed);
         }
 
-        this.PlayableCards = this.Hand.Cards.filter((Card) => Card.Playable(this.PlayDeck.Top()) );
+        this.PlayableCards = this.Hand.Cards.filter((Card) => Card.Playable(this.PlayDeck.Top(), this.Owner.JustPlayed) );
 
         var ChooseCard = () => {
             if(this.PlayableCards.length == 0) this.DrawCardAndPlay();
 
             else {
 
+                this.NormalCards = this.PlayableCards.filter((Card) => Card.Number.localeCompare("1") == 1 && Card.Number.localeCompare("9") != 1);
+                console.log(this.NormalCards);
                 this.Draw2Card = this.PlayableCards.find((Card) => Card.Number == "Draw 2" );
-                this.Draw4Card = this.PlayableCards.find((Card) => Card.Number == "Draw 4" );
+                this.WildCard = this.PlayableCards.find((Card) => Card.Color == "Wild" && Card.Number == "0");
+                this.Wild4Card = this.PlayableCards.find((Card) => Card.Color == "Wild" && Card.Number == "Draw 4" );
                 this.ReverseCard = this.PlayableCards.find((Card) => Card.Number == "Reverse" );
                 this.SkipCard = this.PlayableCards.find((Card) => Card.Number == "Skip" );
+                this.OCard = this.PlayableCards.find((Card) => Card.Number == "0" && Card.Color != "Wild" );
+                this.ExactCard = this.PlayableCards.find((Card) => Card.IsExactMatch(this.PlayDeck.Top(), this.Owner.JustPlayed));
 
-                if(this.Owner.NextPlayer().Hand.Cards.length == 1) {
-
-                    if(this.Draw2Card != undefined) this.PlayCard(this.Draw2Card);
-                    else if(this.Draw4Card != undefined) this.PlayCard(this.Draw4Card);
-                    else if(this.ReverseCard != undefined) this.PlayCard(this.ReverseCard);
-                    else if(this.SkipCard != undefined && !this.Owner.NextPlayer().IsSkipped) this.PlayCard(this.SkipCard);
-
-                    else this.PlayCard(random(this.PlayableCards));
-
-                }
-
-                else {
+                if(!Dirty_Uno) {
 
                     this.UnoPlayer = this.Owner.Players.find((Player) => Player.Hand.Cards.length == 1 && Player != this );
 
-                    if(this.UnoPlayer != undefined && this.SkipCard != undefined && !this.UnoPlayer.IsSkipped) this.PlayCard(this.SkipCard);
+                    if(this.Owner.NextPlayer().Hand.Cards.length == 1) this.PrioritizePlay(this.Draw2Card, this.Wild4Card, this.ReverseCard, this.SkipCard, random(this.NormalCards), this.OCard, this.WildCard);
 
-                    else {
+                    else if(this.UnoPlayer != undefined) this.PrioritizePlay(this.SkipCard, random(this.NormalCards), this.OCard, this.ReverseCard, this.Draw2Card, this.WildCard, this.Wild4Card);
 
-                        this.NumberCards = this.PlayableCards.filter((Card) => Card.Number.localeCompare("0") >= 0 && Card.Number.localeCompare("9") <= 0 && Card.Color != "Wild" );
-                        this.PowerCards = this.PlayableCards.filter((Card) => Card.Number == "Skip" || Card.Number == "Reverse" || Card.Number == "Draw 2" );
-                        this.WildCards = this.PlayableCards.filter((Card) => Card.Color == "Wild" );
-
-                        if(this.NumberCards.length != 0) this.PlayCard(random(this.NumberCards));
-
-                        else if(this.PowerCards.length != 0) this.PlayCard(random(this.PowerCards));
-
-                        else if(this.WildCards.length != 0) this.PlayCard(random(this.WildCards));
-
-
-                    }
+                    else this.PrioritizePlay(random(this.NormalCards), this.OCard, this.ReverseCard, this.SkipCard, this.Draw2Card, this.WildCard, this.Wild4Card);
 
                 }
+
+                else if(Dirty_Uno) {
+
+                    this.UnoPlayer = this.Owner.Players.find((Player) => Player.Hand.Cards.length == 1 && Player != this );
+
+                    if(this.Owner.JustPlayed && (this.PlayDeck.Cards.Top().Number == "Draw 2" || this.PlayDeck.Cards.Top().Number == "Draw 4")) this.PrioritizePlay(this.PlayableCards);
+
+                    else if(this.Owner.NextPlayer().Hand.Cards.length == 1) this.PrioritizePlay(this.Draw2Card, this.Wild4Card, this.ReverseCard, this.SkipCard, this.ExactCard, random(this.NormalCards), this.WildCard, this.OCard);
+
+                    else if(this.UnoPlayer != undefined) this.PrioritizePlay(this.SkipCard, this.ExactCard, random(this.NormalCards), this.ReverseCard, this.Draw2Card, this.WildCard, this.Wild4Card, this.OCard);
+
+                    else if(this.Owner.PreviousPlayer().Hand.Cards.length == 1 || this.Hand.Cards.length > this.Owner.PreviousPlayer().Hand.Cards.length - 2) this.PrioritizePlay(this.OCard, this.ExactCard, random(this.NormalCards), this.ReverseCard, this.Draw2Card, this.SkipCard, this.WildCard, this.Wild4Card);
+
+                    else this.PrioritizePlay(this.ExactCard, random(this.NormalCards), this.ReverseCard, this.SkipCard, this.Draw2Card, this.WildCard, this.Wild4Card, this.OCard);
+                }
+
+                
             }
         }
 
-        setTimeout(ChooseCard, 1000);
+        setTimeout(ChooseCard, this.Delay);
     }
 
     StartTurnPhase3() {
@@ -128,6 +129,20 @@ class AIPlayer extends Player {
 
 
         this.EndTurn();
+    }
+
+    PrioritizePlay(...Cards) {
+
+        for(const Card of Cards) {
+
+            if(Card != undefined) {
+                this.PlayCard(Card);
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
 }

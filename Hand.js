@@ -9,8 +9,13 @@ class Hand {
         this.MinOffset = (40 / 700) * Math.min(windowWidth, windowHeight);
         this.MaxSize = 1;
 
-        this.TargetWidth = (Math.min(width, height) * 2) / 3;
+        this.Radius = (Math.min(width, height) / 3) - (Images.CardBack.height / 2) - 5;
+        
+        this.Sidelength = 2 * this.Radius * Math.sin(Math.PI / (Num_of_Human + Num_of_AI));
 
+        this.TargetWidth = this.Sidelength;
+
+        
     }
 
     Move(X, Y, Angle) {
@@ -27,18 +32,20 @@ class Hand {
 
         this.Cards.push(Card);
 
-        if(WillSort) this.Sort();
+        if(WillSort) this.Sort(DrawSpeed);
 
-        else if(!GamePlaying) this.RepositionCards(DealSpeed);
+        else if(!Players.GamePlaying) this.RepositionCards(DealSpeed);
 
         else this.RepositionCards(DrawSpeed);
     }
 
-    Sort() {
+    Sort(Speed) {
 
         this.Cards.sort(Card.Compare);
 
-        this.RepositionCardsIM();
+        if(Speed == 0) this.RepositionCardsIM();
+
+        else this.RepositionCards(Speed);
     }
 
     RepositionCards(Speed) {
@@ -52,7 +59,7 @@ class Hand {
 
         this.RecalculatePosition();
 
-        for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].Move(this.CardX(i), this.CardY(i), this.Angle) };
+        for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].Move(this.CardX(i), this.CardY(i), this.Angle, this.CardSize) };
     }
 
     RecalculatePosition() {
@@ -83,26 +90,25 @@ class Hand {
         rectMode(CENTER);
         fill(0);
         noStroke();
-        //if(GamePlaying) rect(this.X, this.Y, this.CardOffset() * (this.Cards.length - 1) + Images.CardBack.width, Images.CardBack.height);
 
         for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].Draw() };
         for(var i = this.Cards.length - 1; i >= 0; i--) { this.Cards[i].Update() };
 
     }
 
-    MoveUpPlayableCards(TopCard) { for(var i = 0; i < this.Cards.length; i++) { if(this.Cards[i].Playable(TopCard)) this.Cards[i].SmoothShift(0, -20, ShiftUpSpeed) } };
+    MoveUpPlayableCards(TopCard, JustPlayed) { for(var i = 0; i < this.Cards.length; i++) { if(this.Cards[i].Playable(TopCard, JustPlayed)) this.Cards[i].SmoothShift(0, -20, ShiftUpSpeed) } };
 
     Show() { for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].Show() } };
 
     Hide() { for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].Hide() } };
 
-    SetUpPlayableCards(TopCard, PlayableCallBack, NotPlayableCallBack) {
+    SetUpPlayableCards(TopCard, PlayableCallBack, NotPlayableCallBack, JustPlayed) {
 
         var NumOfPlayableCards = 0;
 
         for(var i = 0; i < this.Cards.length; i++) {
 
-            if(this.Cards[i].Playable(TopCard)) {
+            if(this.Cards[i].Playable(TopCard, JustPlayed)) {
 
                 NumOfPlayableCards++;
 
@@ -118,6 +124,22 @@ class Hand {
     }
 
     UnSetUpPlayableCards() { for(var i = 0; i < this.Cards.length; i++) { this.Cards[i].RemoveCallBack() } };
+
+    HasPlayableCards(TopCard, JustPlayed) {
+
+        var NumOfPlayableCards = 0;
+
+        for(var i = 0; i < this.Cards.length; i++) {
+
+            if(this.Cards[i].Playable(TopCard, JustPlayed)) {
+
+                NumOfPlayableCards++;
+            }
+
+        }
+
+        return (NumOfPlayableCards != 0);
+    }
 
     RemoveCard(Card) {
         this.position = this.Cards.indexOf(Card);
