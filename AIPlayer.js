@@ -4,9 +4,9 @@ class AIPlayer extends Player {
 
         super(X, Y, DrawDeck, PlayDeck);
 
-        this.DeBug = true;
+        this.DeBug = false;
 
-        this.Delay = 3000;
+        this.Delay = 1000;
     
     }
 
