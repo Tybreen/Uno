@@ -135,10 +135,10 @@ class HumanPlayer extends Player {
     }
 
     ChooseColor(ButtonClicked) {
-        if(ButtonClicked == 0) this.PlayDeck.Top().SelectedColor = "#4287f5";
-        else if(ButtonClicked == 1) this.PlayDeck.Top().SelectedColor = "#66CC00";
-        else if(ButtonClicked == 2) this.PlayDeck.Top().SelectedColor = "#CC0000";
-        else this.PlayDeck.Top().SelectedColor = "#FFCC33";
+        if(ButtonClicked == 0) this.PlayDeck.Top().SelectedColor = "blue"; 
+        else if(ButtonClicked == 1) this.PlayDeck.Top().SelectedColor = "green";
+        else if(ButtonClicked == 2) this.PlayDeck.Top().SelectedColor = "red";
+        else this.PlayDeck.Top().SelectedColor = "yellow";
 
         this.WildUI = false;
         this.EndTurn();

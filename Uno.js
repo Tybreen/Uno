@@ -136,6 +136,10 @@ function MainMenu() {
 
     this.enter = function() {
 
+        console.log("Width = " + windowWidth);
+        console.log("Height = " + windowHeight);
+        console.log(TextSizeRatio * 4)
+
         gui = createGui("Select Settings");
         gui.prototype.setSize(200, 164);
         gui.setPosition((width / 2) - 100, (height / 2) - 82);
@@ -143,7 +147,7 @@ function MainMenu() {
 
         Play = createButton("Play");
         Play.style('font-size', '40px');
-        Play.size(200, 100);
+        Play.size(TextSizeRatio * 8, TextSizeRatio * 4);
         Play.position((width / 2) - Play.size().width / 2, (height / 2) - (Play.size().height / 2) + (height / 4));
         Play.mousePressed(() => {
         if(Num_of_Human != 0 || Num_of_AI != 0) {
@@ -158,8 +162,8 @@ function MainMenu() {
 
         RulesButton = createButton("Rules");
         RulesButton.style('font-size', '25px');
-        RulesButton.size(100, 50);
-        RulesButton.position((width / 2) - RulesButton.size().width / 2, (height / 2 + 100) - (RulesButton.size().height / 2) + (height / 4));
+        RulesButton.size(TextSizeRatio * 4, TextSizeRatio * 2);
+        RulesButton.position((width / 2) - RulesButton.size().width / 2, (height / 1.5) - (RulesButton.size().height / 2) + (height / 4));
         RulesButton.mousePressed(() => {
         if(Num_of_Human != 0 || Num_of_AI != 0) {
             gui.hide();
@@ -215,8 +219,8 @@ function Rules() {
             if(Num_of_Human != 0 || Num_of_AI != 0) {
                 Normal.hide();
                 Dirty.show();
-                DirtyText.hide();
-                NormalText.show();
+                this.DirtyText.hide();
+                this.NormalText.show();
                 
             }
         })
@@ -229,8 +233,8 @@ function Rules() {
             if(Num_of_Human != 0 || Num_of_AI != 0) {
                 Dirty.hide();
                 Normal.show();
-                NormalText.hide();
-                DirtyText.show();
+                this.NormalText.hide();
+                this.DirtyText.show();
 
             }
         })
@@ -245,37 +249,39 @@ function Rules() {
                 button.remove();
                 Normal.remove();
                 Dirty.remove();
-                NormalText.remove();
-                DirtyText.remove();
-                CreditsText.remove();
+                this.NormalText.remove();
+                this.DirtyText.remove();
+                this.CreditsText.remove();
                 mgr.showScene(MainMenu);
             }
         })
 
-        var NormalText = createDiv("Every player starts with seven cards, and they are dealt face down. On your turn, players must match either the number, color, or the symbol/Action to the previously laid card.  The computer will automatically lift up any cards in your hand that are available to play. If the player has no matches, they must draw a card from the Draw pile. If that card can be played, play it. Otherwise, the game moves on to the next person in turn.<br/><br/>Action Cards: Besides the number cards, there are several other cards that help mix up the game. These are called Action or Symbol cards.<br/><br/>Reverse – playing this card will reverse the order of game play.<br/><br/>Skip – the player who lays the card can select which player will lose their next turn.<br/><br/>Draw Two – if this card is played, the next player will have to pick up two cards and forfeit his/her turn.<br/><br/>Wild – This card can be played at any time.  The player can select what color will be played next.<br/><br/>Wild Draw Four – This acts just like the wild card except that the next player also has to draw four cards as well as forfeit his/her turn. The first player to play all their cards is the winner.");
-        NormalText.style('font-size', TextSizeRatio / 1.8 + 'px');
+        this.NormalText = createDiv("Every player starts with seven cards, and they are dealt face down. On your turn, players must match either the number, color, or the symbol/Action to the previously laid card.  The computer will automatically lift up any cards in your hand that are available to play. If the player has no matches, they must draw a card from the Draw pile. If that card can be played, play it. Otherwise, the game moves on to the next person in turn.<br/><br/>Action Cards: Besides the number cards, there are several other cards that help mix up the game. These are called Action or Symbol cards.<br/><br/>Reverse – playing this card will reverse the order of game play.<br/><br/>Skip – the player who lays the card can select which player will lose their next turn.<br/><br/>Draw Two – if this card is played, the next player will have to pick up two cards and forfeit his/her turn.<br/><br/>Wild – This card can be played at any time.  The player can select what color will be played next.<br/><br/>Wild Draw Four – This acts just like the wild card except that the next player also has to draw four cards as well as forfeit his/her turn. The first player to play all their cards is the winner.");
+        this.NormalText.style('font-size', TextSizeRatio / 2 + 'px');
         //NormalText.style("text-align", "center");
-        NormalText.style("margin", "25px");
-        NormalText.position(0, 150);
+        this.NormalText.style("margin", "25px");
+        this.NormalText.position(0, 125);
 
-        var DirtyText = createDiv("The general rules follow those for the standard Uno game with the following additions.<br/><br/>Players must continue drawing cards until they are able to play.<br/><br/>If a player matches the same number AND color of the previously laid card, the previous player must draw that many cards.(Example: if you play a red 9 on top of a red 9, the previous player would draw 9 cards)<br/><br/>If a draw 2 is played, the next player can lay another draw 2 (any color) on top of it… but the following player would now be required to draw 4… if they also have a draw 2 card to play, they can lay it and the next player would draw 6, etc.  (the same applies to Draw 4 cards, a second card draws 8, a third draws 12, etc)<br/><br/>If a player lays a 0 card, everyone switches hands in the direction of the game play.");
-        DirtyText.style('font-size', TextSizeRatio / 1.8 + 'px');
-        //DirtyText.style("text-align", "center");
-        DirtyText.style("margin", "25px");
-        DirtyText.hide();
-        DirtyText.position(0, 150);
+        console.log(this.NormalText.size());
 
-        var CreditsText = createDiv("Credits:<br/>Thank you Codey for helping me with this Code and teaching me about Classes.<br/>Thank you Uncle Roger for the Deck Splitter code.<br/>Thank you Mom and Dad for encouraging me and for testing the game.");
-        CreditsText.style('font-size', TextSizeRatio / 2 + 'px');
+        this.DirtyText = createDiv("The general rules follow those for the standard Uno game with the following additions.<br/><br/>Players must continue drawing cards until they are able to play.<br/><br/>If a player matches the same number AND color of the previously laid card, the previous player must draw that many cards.(Example: if you play a red 9 on top of a red 9, the previous player would draw 9 cards)<br/><br/>If a draw 2 is played, the next player can lay another draw 2 (any color) on top of it… but the following player would now be required to draw 4… if they also have a draw 2 card to play, they can lay it and the next player would draw 6, etc.  (the same applies to Draw 4 cards, a second card draws 8, a third draws 12, etc)<br/><br/>If a player lays a 0 card, everyone switches hands in the direction of the game play.");
+        this.DirtyText.style('font-size', TextSizeRatio / 2 + 'px');
         //DirtyText.style("text-align", "center");
-        CreditsText.style("margin", width / 6.5 + "px");
-        CreditsText.show();
-        CreditsText.position(0, height - (TextSizeRatio * 6.5));
+        this.DirtyText.style("margin", "25px");
+        this.DirtyText.hide();
+        this.DirtyText.position(0, 125);
+
+        this.CreditsText = createDiv("Credits:<br/>Thank you Codey for helping me with this Code and teaching me about Classes.<br/>Thank you Uncle Roger for the Deck Splitter code.<br/>Thank you Mom and Dad for encouraging me and for testing the game.");
+        this.CreditsText.style('font-size', TextSizeRatio / 2 + 'px');
+        //DirtyText.style("text-align", "center");
+        this.CreditsText.style("margin", width / 6.5 + "px");
+        this.CreditsText.show();
+        //CreditsText.position(0, 75 + NormalText.size().height);
 
     }
 
     this.draw = function() {
-        
+        this.CreditsText.position(0, 80 + Math.max(this.NormalText.size().height, this.DirtyText.size().height));
     }
 
 }
@@ -325,10 +331,6 @@ function Game() {
         DrawDeck.Draw();
         PlayDeck.Draw();
         Players.Draw();
-
-
-        //console.log("Width = " + windowWidth);
-        //console.log("Height = " + windowHeight);
 
         if(Players.GamePlaying && Players.CurrentPlayer().CheckingWon()) DrawEndingScreen();
 

@@ -37,8 +37,6 @@ class Player {
             DrawDeck.Shuffle();
             DrawDeck.Move();
 
-            console.log("Num of cards now" + DrawDeck.Cards.length)
-
             for(const Card of DrawDeck.Cards) { Card.SelectedColor = "" };
         }
 

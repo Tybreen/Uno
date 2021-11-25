@@ -37,7 +37,7 @@ class Card {
             this.Sprite.scale = this.StartingSize  + this.ShiftSize * DT;
         }
 
-        fill(this.SelectedColor);
+        fill(this.DrawingColor());
 
         noStroke();
 
@@ -99,6 +99,13 @@ class Card {
         else if(TopCard.Color == "Wild") return TopCard.SelectedColor == this.Color;
 
         else return TopCard.Color == this.Color || TopCard.Number == this.Number;
+    }
+
+    DrawingColor() {
+        if(this.SelectedColor == "blue") return "#4287f5";
+        else if(this.SelectedColor == "green") return "#66CC00";
+        else if(this.SelectedColor == "red") return "#CC0000";
+        else return "#FFCC33";
     }
 
     AddCallBack(PlayerCallBack) {

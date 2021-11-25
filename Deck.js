@@ -42,12 +42,10 @@ class Deck {
             
         }
 
-        /*for(var i = 0; i < 10; i++) {
-            this.Cards.push(new Card("red", "9"));
-            this.Cards.push(new Card("Wild", "0"));
-            this.Cards.push(new Card("red", "0"));
-            this.Cards.push(new Card("red", "Skip"));
-            this.Cards.push(new Card("red", "Reverse"));
+        /*for(var i = 0; i < 50; i++) {
+            this.Cards.push(new Card("green", "5"));
+            this.Cards.push(new Card("Wild", "Draw 4"));
+            
         }*/
 
         this.Move();

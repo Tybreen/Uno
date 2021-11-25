@@ -4,9 +4,9 @@ class AIPlayer extends Player {
 
         super(X, Y, DrawDeck, PlayDeck);
 
-        this.DeBug = false;
+        this.DeBug = true;
 
-        this.Delay = 1000;
+        this.Delay = 3000;
     
     }
 
@@ -43,8 +43,8 @@ class AIPlayer extends Player {
 
             else {
 
-                this.NormalCards = this.PlayableCards.filter((Card) => Card.Number.localeCompare("1") == 1 && Card.Number.localeCompare("9") != 1);
-                console.log(this.NormalCards);
+                this.UnoPlayer = this.Owner.Players.find((Player) => Player.Hand.Cards.length == 1 && Player != this );
+                this.NormalCards = this.PlayableCards.filter((Card) => Card.Number.localeCompare("0") == 1 && Card.Number.localeCompare("9") != 1);
                 this.Draw2Card = this.PlayableCards.find((Card) => Card.Number == "Draw 2" );
                 this.WildCard = this.PlayableCards.find((Card) => Card.Color == "Wild" && Card.Number == "0");
                 this.Wild4Card = this.PlayableCards.find((Card) => Card.Color == "Wild" && Card.Number == "Draw 4" );
@@ -54,8 +54,6 @@ class AIPlayer extends Player {
                 this.ExactCard = this.PlayableCards.find((Card) => Card.IsExactMatch(this.PlayDeck.Top(), this.Owner.JustPlayed));
 
                 if(!Dirty_Uno) {
-
-                    this.UnoPlayer = this.Owner.Players.find((Player) => Player.Hand.Cards.length == 1 && Player != this );
 
                     if(this.Owner.NextPlayer().Hand.Cards.length == 1) this.PrioritizePlay(this.Draw2Card, this.Wild4Card, this.ReverseCard, this.SkipCard, random(this.NormalCards), this.OCard, this.WildCard);
 
@@ -67,9 +65,7 @@ class AIPlayer extends Player {
 
                 else if(Dirty_Uno) {
 
-                    this.UnoPlayer = this.Owner.Players.find((Player) => Player.Hand.Cards.length == 1 && Player != this );
-
-                    if(this.Owner.JustPlayed && (this.PlayDeck.Cards.Top().Number == "Draw 2" || this.PlayDeck.Cards.Top().Number == "Draw 4")) this.PrioritizePlay(this.PlayableCards);
+                    if(this.Owner.JustPlayed && (this.PlayDeck.Top().Number == "Draw 2" || this.PlayDeck.Top().Number == "Draw 4")) this.PrioritizePlay(random(this.PlayableCards));
 
                     else if(this.Owner.NextPlayer().Hand.Cards.length == 1) this.PrioritizePlay(this.Draw2Card, this.Wild4Card, this.ReverseCard, this.SkipCard, this.ExactCard, random(this.NormalCards), this.WildCard, this.OCard);
 
